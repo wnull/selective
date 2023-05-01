@@ -1,0 +1,13 @@
+{
+    "name": "wnull/cookie-extractor",
+    "description": "",
+    "autoload": {
+        "psr-4": {
+            "Wnull\\CookieFilterer\\": "src"
+        }
+    },
+    "require": {
+        "php": ">=7.4",
+        "guzzlehttp/guzzle": "^7.0"
+    }
+}
