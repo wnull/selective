@@ -15,7 +15,7 @@ trait Reflective
     /**
      * @throws ReflectionException
      */
-    public function reflectionPropertyValue(object $instance, string $property): array
+    protected function reflectionPropertyValue(object $instance, string $property): array
     {
         $reflection = new ReflectionClass($instance);
 
@@ -25,7 +25,7 @@ trait Reflective
     /**
      * @throws ReflectionException
      */
-    public function reflectionIsBooleanReturnTypeClosure(Closure $closure): bool
+    protected function reflectionIsBooleanReturnTypeClosure(Closure $closure): bool
     {
         $reflection = new ReflectionFunction($closure);
 

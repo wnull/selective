@@ -16,7 +16,11 @@ use Wnull\CookieExtractor\Exception\EmptyCookiesException;
 use Wnull\CookieExtractor\Helper\CookieAssistant;
 use Wnull\CookieExtractor\Helper\Reflective;
 
+use function array_filter;
+use function in_array;
 use function reset;
+
+use const ARRAY_FILTER_USE_KEY;
 
 final class CookieExtractor
 {
@@ -24,16 +28,29 @@ final class CookieExtractor
 
     protected array $clientOptions;
 
+    private array $neededCookies = [];
+    private string $host = '';
+
     public function __construct(array $clientOptions = [])
     {
         $this->clientOptions = $clientOptions;
+    }
+
+    public function getNeededCookiesJar(): CookieJar
+    {
+        return $this->arrayCookiesToCookieJar($this->getNeededCookies(), $this->host);
+    }
+
+    public function getNeededCookies(): array
+    {
+        return $this->neededCookies;
     }
 
     /**
      * @throws ReflectionException
      * @throws ClientExceptionInterface
      */
-    public function exclude(RequestInterface $request, Closure $closure): void
+    public function exclude(RequestInterface $request, Closure $closure): self
     {
         $this->reflectionIsBooleanReturnTypeClosure($closure);
 
@@ -46,16 +63,29 @@ final class CookieExtractor
 
         $cookies = $this->guzzleCookiesArrayNormalize($cookieJar->toArray());
 
-        // TODO: Implement the exclusion of unnecessary cookies.
+        foreach ($cookies as $cookieName => $cookieValue) {
+            unset($cookies[$cookieName]);
 
-        /*
+            $filtered = array_filter(
+                $cookies,
+                fn (string $key): bool => !in_array($key, $this->neededCookies, true),
+                ARRAY_FILTER_USE_KEY
+            );
+
+            $cookiesForSend = $this->arrayCookiesToString($filtered);
             $response = $closure(
-                $client->send(
-                    $request->withHeader('cookie', $this->arrayCookiesToString($cookies)),
-                    $this->clientOptions,
+                $client->sendRequest(
+                    $request->withHeader('cookie', $cookiesForSend)
                 )
             );
-        */
+
+            if ($response === false) {
+                $cookies[$cookieName] = $cookieValue;
+                $this->neededCookies[$cookieName] = $cookieValue;
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -63,26 +93,26 @@ final class CookieExtractor
      */
     private function getCookieJarViaReflection(RequestInterface &$request): CookieJar
     {
-        $cookies = new CookieJar();
-
         if (
             isset($this->clientOptions['cookies'])
             && $this->clientOptions['cookies'] instanceof CookieJarInterface
         ) {
             $cookies = $this->clientOptions['cookies'];
             unset($this->clientOptions['cookies']);
+        } else {
+            $cookies = new CookieJar();
         }
 
         $requestCookies = $this->reflectionPropertyValue($request, 'headers');
-        $host = $requestCookies['Host'][0] ?? '';
+        $this->host = $request->getUri()->getHost();
 
         if (!empty($requestCookies['cookie'])) {
             $cookieString = reset($requestCookies['cookie']);
-            $this->mergeCookies($cookieString, $host, $cookies);
+            $this->mergeCookies($cookieString, $this->host, $cookies);
         }
 
         if (!empty($this->clientOptions['headers']['cookie'])) {
-            $this->mergeCookies($this->clientOptions['headers']['cookie'], $host, $cookies);
+            $this->mergeCookies($this->clientOptions['headers']['cookie'], $this->host, $cookies);
         }
 
         $request = $request->withoutHeader('cookie');

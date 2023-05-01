@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Wnull\CookieExtractor\Helper;
 
+use GuzzleHttp\Cookie\CookieJar;
+use GuzzleHttp\Cookie\SetCookie;
+
 use function array_filter;
 use function explode;
 use function implode;
@@ -47,5 +50,21 @@ trait CookieAssistant
         }
 
         return implode(';', $result);
+    }
+
+    protected function arrayCookiesToCookieJar(array $cookies, string $host): CookieJar
+    {
+        $jar = new CookieJar();
+
+        foreach ($cookies as $cookieName => $cookieValue) {
+            $newCookie = new SetCookie();
+            $newCookie->setName($cookieName);
+            $newCookie->setValue($cookieValue);
+            $newCookie->setDomain($host);
+
+            $jar->setCookie($newCookie);
+        }
+
+        return $jar;
     }
 }

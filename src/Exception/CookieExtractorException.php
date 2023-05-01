@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Wnull\CookieExtractor\Exception;
 
-class EmptyCookiesException extends CookieExtractorException
+use RuntimeException;
+
+class CookieExtractorException extends RuntimeException
 {
 }
