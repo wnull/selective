@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wnull\CookieFilterer\Helper;
+namespace Wnull\CookieExtractor\Helper;
 
 use function array_filter;
 use function explode;

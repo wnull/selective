@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wnull\CookieFilterer;
+namespace Wnull\CookieExtractor;
 
 use Closure;
 use GuzzleHttp\Client;
@@ -12,9 +12,9 @@ use GuzzleHttp\Cookie\SetCookie;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use ReflectionException;
-use Wnull\CookieFilterer\Exception\EmptyCookiesException;
-use Wnull\CookieFilterer\Helper\CookieAssistant;
-use Wnull\CookieFilterer\Helper\Reflective;
+use Wnull\CookieExtractor\Exception\EmptyCookiesException;
+use Wnull\CookieExtractor\Helper\CookieAssistant;
+use Wnull\CookieExtractor\Helper\Reflective;
 
 use function reset;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wnull\CookieFilterer\Exception;
+namespace Wnull\CookieExtractor\Exception;
 
 use RuntimeException;
 

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Wnull\CookieFilterer\Helper;
+namespace Wnull\CookieExtractor\Helper;
 
 use Closure;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
-use Wnull\CookieFilterer\Exception\NotBooleanReturnTypeException;
+use Wnull\CookieExtractor\Exception\NotBooleanReturnTypeException;
 
 trait Reflective
 {
