@@ -2,6 +2,14 @@
 
 A sifter of unnecessary cookies with a custom callback. 
 
+## Installation
+
+Via Composer:
+
+```shell
+$ composer require wnull/cookie-extractor
+```
+
 ## Quickstart
 
 Basic example
@@ -17,19 +25,20 @@ $cookieJar = \GuzzleHttp\Cookie\CookieJar::fromArray($cookiesArray, 'example.com
 
 $request = new \GuzzleHttp\Psr7\Request('GET', $url, ['cookie' => 'variant=yes']);
 
-$myCustomClosure = static function (\Psr\Http\Message\ResponseInterface $response): bool {
+$closure = static function (\Psr\Http\Message\ResponseInterface $response): bool {
     return $response->getStatusCode() === 200;
 };
 
 try {
     $extractor = new \Wnull\CookieExtractor\CookieExtractor(['cookies' => $cookieJar]);
-
-    $cookiesAsArray = $extractor->exclude($request, $myCustomClosure)->getNeededCookies();
-    $cookiesAsJar = $extractor->exclude($request, $myCustomClosure)->getNeededCookiesJar();
+    $exclude = $extractor->exclude($request, $closure);
     
+    $cookiesAsArray = $exclude->getNeededCookies();
     print_r($cookiesAsArray);
+    $cookiesAsJar = $exclude->getNeededCookiesJar();
+    print_r($cookiesAsJar);
 } catch (Throwable $exception) {
-    echo $exception->getMessage(); exit();
+    echo $exception->getMessage();
 }
 ```
 
