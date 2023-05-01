@@ -1,6 +1,7 @@
 {
     "name": "wnull/cookie-extractor",
-    "description": "",
+    "description": "A sifter of unnecessary cookies with a custom callback.",
+    "version": "0.0.1",
     "autoload": {
         "psr-4": {
             "Wnull\\CookieExtractor\\": "src"
