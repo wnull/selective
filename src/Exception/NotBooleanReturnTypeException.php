@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wnull\CookieExtractor\Exception;
+namespace Wnull\Selective\Exception;
 
 class NotBooleanReturnTypeException extends CookieExtractorException
 {

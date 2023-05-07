@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Wnull\CookieExtractor;
+namespace Wnull\Selective;
 
 use Closure;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
-use GuzzleHttp\Cookie\CookieJarInterface;
 use GuzzleHttp\Cookie\SetCookie;
 use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Message\RequestInterface;
 use ReflectionException;
-use Wnull\CookieExtractor\Exception\EmptyCookiesException;
-use Wnull\CookieExtractor\Helper\CookieAssistant;
-use Wnull\CookieExtractor\Helper\Reflective;
+use Wnull\Selective\Exception\IncorrectExecuteCallbackException;
+use Wnull\Selective\ValueObject\CookieStepIterate;
+use Wnull\Selective\Exception\EmptyCookiesException;
+use Wnull\Selective\Helper\CookieAssistant;
+use Wnull\Selective\Helper\Reflective;
 
 use function array_filter;
 use function in_array;
@@ -22,7 +23,7 @@ use function reset;
 
 use const ARRAY_FILTER_USE_KEY;
 
-final class CookieExtractor
+final class Selective
 {
     use CookieAssistant, Reflective;
 
@@ -36,9 +37,9 @@ final class CookieExtractor
         $this->clientOptions = $clientOptions;
     }
 
-    public function getNeededCookiesJar(): CookieJar
+    public function getNeededCookieJar(): CookieJar
     {
-        return $this->arrayCookiesToCookieJar($this->getNeededCookies(), $this->host);
+        return $this->arrayCookiesToJar($this->getNeededCookies(), $this->host);
     }
 
     public function getNeededCookies(): array
@@ -50,7 +51,7 @@ final class CookieExtractor
      * @throws ReflectionException
      * @throws ClientExceptionInterface
      */
-    public function exclude(RequestInterface $request, Closure $closure): self
+    public function exclude(RequestInterface $request, Closure $closure, ?Closure $stepClosure = null): self
     {
         $this->reflectionIsBooleanReturnTypeClosure($closure);
 
@@ -63,6 +64,17 @@ final class CookieExtractor
 
         $cookies = $this->guzzleCookiesArrayNormalize($cookieJar->toArray());
 
+        $response = $closure(
+            $client->sendRequest(
+                $request->withHeader('cookie', $this->arrayCookiesToString($cookies))
+            )
+        );
+
+        if ($response === false) {
+            throw new IncorrectExecuteCallbackException('Incorrect execution of the closure');
+        }
+
+        $step = 1;
         foreach ($cookies as $cookieName => $cookieValue) {
             unset($cookies[$cookieName]);
 
@@ -83,6 +95,14 @@ final class CookieExtractor
                 $cookies[$cookieName] = $cookieValue;
                 $this->neededCookies[$cookieName] = $cookieValue;
             }
+
+            if ($stepClosure instanceof Closure) {
+                $stepClosure(
+                    new CookieStepIterate($step, $cookieName, $cookieValue, $response)
+                );
+            }
+
+            $step++;
         }
 
         return $this;
@@ -95,7 +115,7 @@ final class CookieExtractor
     {
         if (
             isset($this->clientOptions['cookies'])
-            && $this->clientOptions['cookies'] instanceof CookieJarInterface
+            && $this->clientOptions['cookies'] instanceof CookieJar
         ) {
             $cookies = $this->clientOptions['cookies'];
             unset($this->clientOptions['cookies']);

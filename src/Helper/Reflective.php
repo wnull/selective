@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Wnull\CookieExtractor\Helper;
+namespace Wnull\Selective\Helper;
 
 use Closure;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionFunction;
-use Wnull\CookieExtractor\Exception\NotBooleanReturnTypeException;
+use Wnull\Selective\Exception\NotBooleanReturnTypeException;
 
 trait Reflective
 {
@@ -29,7 +29,7 @@ trait Reflective
     {
         $reflection = new ReflectionFunction($closure);
 
-        if ($reflection->getReturnType()->getName() !== 'bool') {
+        if (!$reflection->getReturnType() || $reflection->getReturnType()->getName() !== 'bool') {
             throw new NotBooleanReturnTypeException('Method must always return a bool');
         }
 
