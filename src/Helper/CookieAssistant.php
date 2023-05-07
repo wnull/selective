@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Wnull\CookieExtractor\Helper;
+namespace Wnull\Selective\Helper;
 
 use GuzzleHttp\Cookie\CookieJar;
 use GuzzleHttp\Cookie\SetCookie;
@@ -52,7 +52,7 @@ trait CookieAssistant
         return implode(';', $result);
     }
 
-    protected function arrayCookiesToCookieJar(array $cookies, string $host): CookieJar
+    protected function arrayCookiesToJar(array $cookies, string $host): CookieJar
     {
         $jar = new CookieJar();
 

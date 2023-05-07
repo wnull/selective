@@ -7,7 +7,7 @@ A sifter of unnecessary cookies with a custom callback.
 Via Composer:
 
 ```shell
-$ composer require wnull/cookie-extractor
+$ composer require wnull/selective
 ```
 
 ## Quickstart
@@ -29,13 +29,21 @@ $closure = static function (\Psr\Http\Message\ResponseInterface $response): bool
     return $response->getStatusCode() === 200;
 };
 
+$stepClosure = static function (\Wnull\Selective\ValueObject\CookieStepIterate $stepIterate): void {
+    echo sprintf(
+        'cookie [%s] is %s' . PHP_EOL,
+        $stepIterate->getCookieName(),
+        $stepIterate->isNeeded() ? 'need' : 'trash'
+    );
+};
+
 try {
-    $extractor = new \Wnull\CookieExtractor\CookieExtractor(['cookies' => $cookieJar]);
-    $exclude = $extractor->exclude($request, $closure);
+    $extractor = new \Wnull\Selective\Selective(['cookies' => $cookieJar]);
+    $exclude = $extractor->exclude($request, $closure, $stepClosure);
     
     $cookiesAsArray = $exclude->getNeededCookies();
     print_r($cookiesAsArray);
-    $cookiesAsJar = $exclude->getNeededCookiesJar();
+    $cookiesAsJar = $exclude->getNeededCookieJar();
     print_r($cookiesAsJar);
 } catch (Throwable $exception) {
     echo $exception->getMessage();
