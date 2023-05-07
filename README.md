@@ -1,6 +1,6 @@
-# Cookie Extractor
+# Selective
 
-A sifter of unnecessary cookies with a custom callback. 
+A sifter of unnecessary cookies with a custom callbacks. 
 
 ## Installation
 
